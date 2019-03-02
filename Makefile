@@ -51,6 +51,7 @@ INCLUDES = $(shell echo *.h)
 
 all: ppmdiff
 
+stage1: rgbtocmp cmptorgb
 
 ## Compile step (.c files -> .o files)
 
@@ -65,6 +66,12 @@ all: ppmdiff
 ppmdiff: ppmdiff.o uarray2.o a2plain.o 
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+rgbtocmp: rgbtocmp.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+cmptorgb: cmptorgb.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
 clean:
-	rm -f ppmdiff 
+	rm -f ppmdiff rgbtocmp cmptorgb *.o
 

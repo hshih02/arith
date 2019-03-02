@@ -16,9 +16,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "seq.h"
+#include <seq.h>
 #include "pnm.h"
 #include "assert.h"
+#include "mem.h"
 
 typedef struct component_video {
         float y; 
@@ -38,6 +39,6 @@ typedef struct post_dct {
         signed d;
         unsigned index_pb;
         unsigned index_pr;
-} *Pnm_rgb;
+} post_dct;
 
 #endif
