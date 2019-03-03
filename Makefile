@@ -51,6 +51,10 @@ INCLUDES = $(shell echo *.h)
 
 all: ppmdiff
 
+ppmdiff: ppmdiff
+
+40image: 40image
+
 stage1: rgbtocmp cmptorgb
 
 ## Compile step (.c files -> .o files)
@@ -63,6 +67,9 @@ stage1: rgbtocmp cmptorgb
 ## Linking step (.o -> executable program)
 
 
+40image: 40image.o compress40.o uarray2b.o a2blocked.o uarray2.o 
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
 ppmdiff: ppmdiff.o uarray2.o a2plain.o 
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
@@ -72,6 +79,7 @@ rgbtocmp: rgbtocmp.o
 cmptorgb: cmptorgb.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+
 clean:
-	rm -f ppmdiff rgbtocmp cmptorgb *.o
+	rm -f 40image ppmdiff rgbtocmp cmptorgb *.o
 

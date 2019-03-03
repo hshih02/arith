@@ -4,6 +4,7 @@
 #include "assert.h"
 #include "compress40.h"
 
+
 static void (*compress_or_decompress)(FILE *input) = compress40;
 
 int main(int argc, char *argv[])
