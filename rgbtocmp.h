@@ -13,4 +13,4 @@
 
 #include "arithstructs.h"
 
-comp_vid rgbtocmp(Pnm_rgb rgbpixel);
+comp_vid rgbtocmp(Pnm_rgb rgbpixel, unsigned denom);

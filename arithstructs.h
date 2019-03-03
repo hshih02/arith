@@ -28,8 +28,9 @@ typedef struct component_video {
 } *comp_vid;
 
 typedef struct trimmed_dimensions {
-        int height; 
-        int width;
+        unsigned height; 
+        unsigned width;
+        unsigned denominator;
 } trim_dim;
 
 typedef struct post_dct {

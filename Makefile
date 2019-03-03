@@ -67,7 +67,7 @@ stage1: rgbtocmp cmptorgb
 ## Linking step (.o -> executable program)
 
 
-40image: 40image.o compress40.o uarray2b.o a2blocked.o uarray2.o 
+40image: 40image.o compress40.o uarray2b.o a2blocked.o uarray2.o rgbtocmp.o cmptorgb.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 ppmdiff: ppmdiff.o uarray2.o a2plain.o 

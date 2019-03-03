@@ -55,15 +55,15 @@ static float get_pr_val(float r, float g, float b);
 //         FREE(postconvert);
 // }
 
-comp_vid rgbtocmp(Pnm_rgb rgbpixel)
+comp_vid rgbtocmp(Pnm_rgb rgbpixel, unsigned denom)
 {
         comp_vid cvpixel;
         NEW(cvpixel);
 
-        unsigned r, g, b;
-        r = rgbpixel->red;
-        g = rgbpixel->green;
-        b = rgbpixel->blue;
+        float r, g, b;
+        r = (float)(rgbpixel->red)/(float)denom;
+        g = (float)(rgbpixel->green)/(float)denom;
+        b = (float)(rgbpixel->blue)/(float)denom;
                         
         
         cvpixel->y = get_y_val(r,g,b);
