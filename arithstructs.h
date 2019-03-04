@@ -20,6 +20,7 @@
 #include "pnm.h"
 #include "assert.h"
 #include "mem.h"
+#include "math.h"
 
 typedef struct component_video {
         float y; 

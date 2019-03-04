@@ -13,4 +13,4 @@
 
 #include "arithstructs.h"
 
-Pnm_rgb cmptorgb(comp_vid cvpixel);
+Pnm_rgb cmptorgb(comp_vid cvpixel, unsigned denominator);
