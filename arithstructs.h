@@ -19,8 +19,10 @@
 #include <seq.h>
 #include "pnm.h"
 #include "assert.h"
-#include "mem.h"
-#include "math.h"
+#include <mem.h>
+#include <math.h>
+#include <arith40.h>
+
 
 typedef struct component_video {
         float y; 

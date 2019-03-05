@@ -13,7 +13,7 @@
 CC = gcc # The compiler being used
 
 # Updating include path to use Comp 40 .h files and CII interfaces
-IFLAGS = -I/comp/40/include -I/usr/sup/cii40/include/cii
+IFLAGS = -I/comp/40/include -I/usr/sup/cii40/include/cii -I/comp/40/include
 
 # Compile flags
 # Set debugging information, allow the c99 standard,
@@ -29,13 +29,13 @@ CFLAGS = -g -std=gnu99 -Wall -Wextra -Werror -Wfatal-errors -pedantic $(IFLAGS)
 # Linking flags
 # Set debugging information and update linking path
 # to include course binaries and CII implementations
-LDFLAGS = -g -L/comp/40/lib64 -L/usr/sup/cii40/lib64
+LDFLAGS = -g -L/comp/40/lib64 -L/usr/sup/cii40/lib64 -L/comp/40/lib64 
 
 # Libraries needed for linking
 # All programs cii40 (Hanson binaries) and *may* need -lm (math)
 # 40locality is a catch-all for this assignment, netpbm is needed for pnm
 # rt is for the "real time" timing library, which contains the clock support
-LDLIBS = -l40locality -lnetpbm -lcii40 -lm -lrt
+LDLIBS = -l40locality -lnetpbm -lcii40 -lm -lrt -larith40
 
 # Collect all .h files in your directory.
 # This way, you can never forget to add
@@ -67,7 +67,7 @@ stage1: rgbtocmp cmptorgb
 ## Linking step (.o -> executable program)
 
 
-40image: 40image.o compress40.o uarray2b.o a2blocked.o uarray2.o rgbtocmp.o cmptorgb.o
+40image: 40image.o compress40.o uarray2b.o a2blocked.o uarray2.o rgbtocmp.o cmptorgb.o dct.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 ppmdiff: ppmdiff.o uarray2.o a2plain.o 
@@ -79,7 +79,9 @@ rgbtocmp: rgbtocmp.o
 cmptorgb: cmptorgb.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+dct: dct.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 clean:
-	rm -f 40image ppmdiff rgbtocmp cmptorgb *.o
+	rm -f 40image ppmdiff rgbtocmp cmptorgb dct *.o
 
