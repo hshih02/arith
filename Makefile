@@ -1,11 +1,10 @@
-# Makefile for locality (Comp 40 Assignment 3)
+# Makefile for arith
 # 
-# Includes build rules for a2test and ppmtrans.
 #
 # This Makefile is more verbose than necessary.  In each assignment
 # we will simplify the Makefile using more powerful syntax and implicit rules.
 #
-# Last updated: February 16, 2016
+# Last updated: Mar 5 2019
 
 
 ############## Variables ###############
@@ -67,7 +66,7 @@ stage1: rgbtocmp cmptorgb
 ## Linking step (.o -> executable program)
 
 
-40image: 40image.o compress40.o uarray2b.o a2blocked.o uarray2.o rgbtocmp.o cmptorgb.o dct.o
+40image: 40image.o compress40.o a2plain.o uarray2.o rgbtocmp.o cmptorgb.o dct.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 ppmdiff: ppmdiff.o uarray2.o a2plain.o 

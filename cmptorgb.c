@@ -72,9 +72,9 @@ Pnm_rgb cmptorgb(comp_vid cvpixel, unsigned denominator)
         pr = cvpixel->pr;
                         
         
-        rgbpixel->red = (unsigned)(get_r_val(y,pb,pr) * denominator);
-        rgbpixel->green = (unsigned)(get_g_val(y,pb,pr) * denominator);
-        rgbpixel->blue = (unsigned)(get_b_val(y,pb,pr) * denominator);
+        rgbpixel->red = (unsigned)roundf((get_r_val(y,pb,pr) * denominator));
+        rgbpixel->green = (unsigned)roundf((get_g_val(y,pb,pr) * denominator));
+        rgbpixel->blue = (unsigned)roundf((get_b_val(y,pb,pr) * denominator));
 
         return rgbpixel;
 }

@@ -17,8 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <seq.h>
-#include "pnm.h"
-#include "assert.h"
+#include <pnm.h>
+#include <assert.h>
 #include <mem.h>
 #include <math.h>
 #include <arith40.h>
@@ -34,6 +34,8 @@ typedef struct trimmed_dimensions {
         unsigned height; 
         unsigned width;
         unsigned denominator;
+        A2Methods_T methods;
+        Seq_T cvpixel_seq;
 } trim_dim;
 
 typedef struct post_dct {
