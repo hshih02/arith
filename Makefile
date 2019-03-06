@@ -81,6 +81,9 @@ cmptorgb: cmptorgb.o
 dct: dct.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+inverse_dct: inverse_dct.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
 clean:
 	rm -f 40image ppmdiff rgbtocmp cmptorgb dct *.o
 

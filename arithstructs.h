@@ -11,9 +11,10 @@
  *
  ********************************************************************/
 
+
 #ifndef ARITHSTRUCTS_INCLUDED
 #define ARITHSTRUCTS_INCLUDED
-
+#define DCT_REQ 4      /*corresponds to blocksize^2*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <seq.h>

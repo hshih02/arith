@@ -12,6 +12,4 @@
  **************************************************************/
 
 #include "arithstructs.h" 
-#define DCT_REQ 4      /*corresponds to blocksize^2*/
-
 post_dct dc_transform(Seq_T component_video);
