@@ -158,7 +158,7 @@ trim_dim trim_image_func(Pnm_ppm image)
         trimmed_image.width = image->width;
         printf("denominator: %u \n\n", trimmed_image.denominator);
 
-        if (image -> height % 2 != 0) { //(maybe assert height and width);
+        if (image -> height % IMGBLOCK != 0) { //(maybe assert height and width);
                 
                 trimmed_image.height = image->height-1;
                 trimmed_image.width = image->width-1;
