@@ -21,6 +21,7 @@
 #include "a2plain.h"
 #include "uarray.h"
 #include "uarray2.h"
+#include <bitpack.h>
 
 #define A2 A2Methods_UArray2
 #define IMGBLOCK 2
@@ -29,6 +30,10 @@
 void compression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl);
 //void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl);
 trim_dim trim_image_func(Pnm_ppm image);
+uint64_t pack_to_word(post_dct dct_values);
+post_dct unpack_word(uint64_t word);
+void print_word(uint32_t word, unsigned width, unsigned height);
+
 
 extern void compress40 (FILE *input)
 {
@@ -102,6 +107,10 @@ void compression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
 //                
                 dct_values = dc_transform(cvpixel_seq);
 
+                uint64_t packedword = pack_to_word(dct_values);
+
+                unpack_word(packedword);
+
                 (void) temp;
                 
         }
@@ -158,13 +167,56 @@ trim_dim trim_image_func(Pnm_ppm image)
         trimmed_image.width = image->width;
         printf("denominator: %u \n\n", trimmed_image.denominator);
 
-        if (image -> height % IMGBLOCK != 0) { //(maybe assert height and width);
-                
+        if (image->height % IMGBLOCK != 0) { 
+
                 trimmed_image.height = image->height-1;
+        }
+
+        if (image->width % IMGBLOCK != 0) { 
+
                 trimmed_image.width = image->width-1;
         } 
 
+
+
+
         return trimmed_image;
+}
+
+uint64_t pack_to_word(post_dct dct_values)
+{
+        uint64_t word = 0;
+        word = Bitpack_newu(word, 9, 23, dct_values.a);
+        word = Bitpack_news(word, 5, 18, dct_values.b);
+        word = Bitpack_news(word, 5, 13, dct_values.c);
+        word = Bitpack_news(word, 5, 8, dct_values.d);
+        word = Bitpack_newu(word, 4, 4, dct_values.index_pb);
+        word = Bitpack_newu(word, 4, 0, dct_values.index_pr);
+
+        printf ("packed word: %lu\n\n", word);
+        return word;
+}
+
+post_dct unpack_word(uint64_t word)
+{
+        post_dct dct_values;
+
+        dct_values.a = Bitpack_getu(word, 9, 23);
+        dct_values.b = Bitpack_gets(word, 5, 18);
+        dct_values.c = Bitpack_gets(word, 5, 13);
+        dct_values.d = Bitpack_gets(word, 5, 8);
+        dct_values.index_pb = Bitpack_getu(word, 4, 4);
+        dct_values.index_pr = Bitpack_getu(word, 4, 0);
+
+        printf("dct_values:\n\n.a = %u\n.b = %i\n.c = %i\n.d = %i\n.index_pb = %u\nindex_pr = %u\n\n", 
+        dct_values.a, dct_values.b, dct_values.c, dct_values.d, dct_values.index_pb, dct_values.index_pr);
+
+        return dct_values;
+}
+
+void print_word(uint32_t word, unsigned width, unsigned height)
+{
+
 }
 
 //version that does stage one only of compression

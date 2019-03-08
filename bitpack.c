@@ -20,7 +20,7 @@
 static const uint64_t BITLEN = 64;
 
 static uint64_t mask_of(unsigned width, unsigned lsb);
-static bool msb_is_neg(uint64_t word, unsigned width, unsigned lsb);
+static bool msb_is_neg(uint64_t value, unsigned width, unsigned lsb);
 static uint64_t lshift(uint64_t word, unsigned n);
 static uint64_t rshift_u(uint64_t word, unsigned n);
 static int64_t rshift_s(int64_t word, unsigned n);
@@ -119,11 +119,10 @@ int64_t Bitpack_gets(uint64_t word, unsigned width, unsigned lsb)
         
         int64_t mask;
         int64_t field_val;
+        mask = mask_of(width, lsb);
+        field_val = word & mask;
 
-        if (msb_is_neg(word, width, lsb)) {
-
-                mask = mask_of(width, lsb);
-                field_val = word & mask;
+        if (msb_is_neg(field_val, width, lsb)) {
                 field_val = lshift(field_val, (BITLEN - (lsb + width)) );
                 field_val = rshift_s(field_val, BITLEN - width );
 
@@ -139,8 +138,6 @@ int64_t Bitpack_gets(uint64_t word, unsigned width, unsigned lsb)
                 // field_val = field_val;
 
         } else {
-                mask = mask_of(width,lsb);
-                field_val = word & mask;
                 field_val = rshift_s(field_val, lsb);
         }
 
@@ -177,8 +174,10 @@ uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
                 assert(0);
         }
 
-        if (msb_is_neg(word, width, lsb)) {
-                uint64_t mask = mask_of(width, lsb);
+        // printf("calling msb is neg with word: %lu, width: %u, lsb: %u, and value: %li\n\n", word, width, lsb, value);
+        if (msb_is_neg(value, width, 0) == true) {      /*use 0 as lsb      */
+                // printf("msb is neg == true\n");         /*because we pass in*/
+                uint64_t mask = mask_of(width, lsb);    /*value, not a word */ 
                 uint64_t mask2 = ~0;
                 
                 mask2 = lshift(mask2, (lsb + width) );
@@ -233,15 +232,15 @@ static uint64_t mask_of(unsigned width, unsigned lsb)
 
 /*works as a modified getu to return the msb instead of entire field*/
 /*still partially untested*/
-static bool msb_is_neg(uint64_t word, unsigned width, unsigned lsb)
+static bool msb_is_neg(uint64_t value, unsigned width, unsigned lsb)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
 
         uint64_t mask = mask_of(width, lsb);
 
-        uint64_t msb = (word & mask); 
+        uint64_t msb = (value & mask);
         
-        msb = rshift_u( msb, (lsb + (width - 1)) ); 
+        msb = rshift_u( msb, (lsb + (width - 1)) );
 
         /*offset width by 1 to prevent shifting past msb*/
 
