@@ -84,6 +84,9 @@ dct: dct.o
 inverse_dct: inverse_dct.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+bitpack: bitpack.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
 clean:
-	rm -f 40image ppmdiff rgbtocmp cmptorgb dct *.o
+	rm -f 40image ppmdiff rgbtocmp cmptorgb dct inverse_dct bitpack *.o
 
