@@ -6,11 +6,17 @@
  *     Authors:  Omar Badr, Henning Shih 
  *     Date:     Mar 1, 2019
  *
- *     don't forget to write stuff here later
+ *     Conducts component video to RGB conversion
  *     
  *
  **************************************************************/
 
 #include "arithstructs.h"
 
+/*
+*       cmptorgb
+*       Takes in a component_video struct and denominator and performs 
+*       the inverse calculations to convert from component video to RGB 
+*       values, returns a Pnm_rgb struct
+*/
 Pnm_rgb cmptorgb(comp_vid cvpixel, unsigned denominator);

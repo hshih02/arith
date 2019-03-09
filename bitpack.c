@@ -24,60 +24,14 @@ static bool msb_is_neg(uint64_t value, unsigned width, unsigned lsb);
 static uint64_t lshift(uint64_t word, unsigned n);
 static uint64_t rshift_u(uint64_t word, unsigned n);
 static int64_t rshift_s(int64_t word, unsigned n);
-// static int64_t mask_of_s(unsigned width, unsigned lsb); returns mask with leading 1's, likely not needed
 
 Except_T Bitpack_Overflow = { "Overflow packing bits" };
 
-
-// int main()  /*test main*/
-// {
-//         // printf("fitsu test; n = 7, 3 bits, returns: %u\n", Bitpack_fitsu(7, 3));
-
-//         printf("extracted getsu val: %lu\n\n", Bitpack_getu(0x3f4, 6 ,2));
-
-//         // printf("extracted getss val: %lu\n", Bitpack_gets(0x3f4, 6 ,2));
-
-//         // msb_is_neg(0x3f4, 6 ,2);
-//         // msb_is_neg(0x3f4, 5 ,2);
-//         // msb_is_neg(0x3f4, 4 ,2);  /*for testing msb_is_neg*/
-//         // msb_is_neg(0x3f4, 3 ,2);
-//         // msb_is_neg(0x3f4, 2 ,2);
-//         // msb_is_neg(0x3f4, 1 ,2);
-        
-//         /*for testing get s*/
-//         // printf("extracted getss val: %li\n\n", Bitpack_gets(0x3f4, 6 ,2));
-//         // printf("extracted getss val: %li\n\n", Bitpack_gets(0x2dd, 7 ,2));
-        
-
-//         /*testing newu*/
-
-//         // uint64_t word = 0x6c2; //1730
-//         // uint64_t value = 0x5; //5
-//         // unsigned width, lsb;
-//         // width = 4;
-//         // lsb = 4;
-
-
-//         // uint64_t packedword = Bitpack_newu(word, width, lsb, value);
-
-//         // printf("packedword with word: %lu  value: %lu \n%lu\n\n", word, value, packedword);
-
-//         /*test news*/
-//         // uint64_t word = 0xaaf9a; // 700314
-//         // int64_t value = -47; // -47
-//         // unsigned width, lsb;
-//         // width = 8;
-//         // lsb = 4;
-//         // uint64_t packedword = Bitpack_news(word, width, lsb, value);
-
-//         // printf("news packedword with word: %lu  value: %lu \n%lu\n\n", word, value, packedword);
-
-
-//         // return 1;
-// }
-
-
-
+/*
+*       Bitpack_fitsu
+*       Takes in a uint64_t and an unsigned width value, returns true 
+*       if the value can be represented in width bits, otherwise false
+*/
 bool Bitpack_fitsu(uint64_t n, unsigned width)
 {
         double range = exp2(width)-1;
@@ -88,7 +42,13 @@ bool Bitpack_fitsu(uint64_t n, unsigned width)
         return false;
 }
 
-bool Bitpack_fitss( int64_t n, unsigned width)
+/*
+*       Bitpack_fitss
+*       Takes in a int64_t and an unsigned width value, returns true 
+*       if the value can be represented in width bits (two's complement),
+*       otherwise false
+*/
+bool Bitpack_fitss(int64_t n, unsigned width)
 {
         double range = -(exp2(width));
         range /= 2;
@@ -100,6 +60,12 @@ bool Bitpack_fitss( int64_t n, unsigned width)
         return false;
 }
 
+/*
+*       Bitpack_getu
+*       Takes in a uint64_t, an unsigned width value and unsigned lsb 
+*       Returns the value of the specified field of the word at defined 
+*       lsb and width 
+*/
 uint64_t Bitpack_getu(uint64_t word, unsigned width, unsigned lsb)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
@@ -113,6 +79,12 @@ uint64_t Bitpack_getu(uint64_t word, unsigned width, unsigned lsb)
         return field_val;
 }
 
+/*
+*       Bitpack_gets
+*       Takes in a uint64_t, an unsigned width value and unsigned lsb
+*       Returns the value of the specified field of the word at defined 
+*       lsb and width (in two's complement)
+*/
 int64_t Bitpack_gets(uint64_t word, unsigned width, unsigned lsb)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
@@ -126,17 +98,6 @@ int64_t Bitpack_gets(uint64_t word, unsigned width, unsigned lsb)
                 field_val = lshift(field_val, (BITLEN - (lsb + width)) );
                 field_val = rshift_s(field_val, BITLEN - width );
 
-                // printf("field_val = %lu\n", field_val);
-
-
-                // mask = mask_of_s(width, lsb); /*old version with mask of s*/
-                // field_val = word & mask;
-                // field_val = rshift_s(field_val, lsb);
-
-                // printf("field_val = %lu\n", field_val);
-
-                // field_val = field_val;
-
         } else {
                 field_val = rshift_s(field_val, lsb);
         }
@@ -144,6 +105,14 @@ int64_t Bitpack_gets(uint64_t word, unsigned width, unsigned lsb)
 
         return field_val;
 }
+
+/*
+*       Bitpack_newu
+*       Takes in a uint64_t, an unsigned width, unsigned lsb, and
+*       uint32_t value
+*       Writes value to the specified field of the word at defined 
+*       lsb and width 
+*/
 uint64_t Bitpack_newu(uint64_t word, unsigned width, unsigned lsb, 
                                                      uint64_t value)
 {
@@ -164,6 +133,14 @@ uint64_t Bitpack_newu(uint64_t word, unsigned width, unsigned lsb,
 
         return word;
 }
+
+/*
+*       Bitpack_news
+*       Takes in a uint64_t, an unsigned width, unsigned lsb, and 
+*       int64_t value
+*       Writes value to the specified field of the word at defined 
+*       lsb and width (in two's complement)
+*/
 uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
                                                      int64_t value)
 {
@@ -174,9 +151,8 @@ uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
                 assert(0);
         }
 
-        // printf("calling msb is neg with word: %lu, width: %u, lsb: %u, and value: %li\n\n", word, width, lsb, value);
         if (msb_is_neg(value, width, 0) == true) {      /*use 0 as lsb      */
-                // printf("msb is neg == true\n");         /*because we pass in*/
+                                                        /*because we pass in*/
                 uint64_t mask = mask_of(width, lsb);    /*value, not a word */ 
                 uint64_t mask2 = ~0;
                 
@@ -200,7 +176,12 @@ uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
         return word;
 }
 
-
+/*
+*       mask_of
+*       Takes in an unsigned width and unsigned lsb, returns a word
+*       with 1's in the field at specified lsb and width and 0's 
+*       in all other bits
+*/
 
 static uint64_t mask_of(unsigned width, unsigned lsb)
 {
@@ -216,22 +197,12 @@ static uint64_t mask_of(unsigned width, unsigned lsb)
 }
 
 
-// static int64_t mask_of_s(unsigned width, unsigned lsb)
-// {
-//         assert(width <= BITLEN && width + lsb <= BITLEN); 
+/*
+*       msb_is_neg
+*       returns true if the msb of a specified field in a uint64_t is 
+*       1, false if 0
+*/
 
-//         int64_t mask = ~0;
-//         mask = lshift(mask, BITLEN - (lsb + (width - 1)) );
-//         mask = rshift_s(mask, BITLEN - (width - 1) );
-//         mask = lshift(mask, lsb);
-
-//         printf ("width: %u, lsb: %u,   mask of s: %lu\n",width, lsb, mask);
-
-//         return mask;
-// }
-
-/*works as a modified getu to return the msb instead of entire field*/
-/*still partially untested*/
 static bool msb_is_neg(uint64_t value, unsigned width, unsigned lsb)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
@@ -245,13 +216,12 @@ static bool msb_is_neg(uint64_t value, unsigned width, unsigned lsb)
         /*offset width by 1 to prevent shifting past msb*/
 
         if (msb == 1) {
-                // printf("w:%u lsb:%u    msb is negative\n", width, lsb);
                 return true;
         }
 
-        // printf("w:%u lsb:%u    msb is positive\n", width, lsb);
         return false;
 }
+
 
 static uint64_t lshift(uint64_t word, unsigned n)
 {

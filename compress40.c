@@ -6,8 +6,8 @@
  *     Authors:  Omar Badr, Henning Shih 
  *     Date:     Mar 3, 2019
  *
- *     Compresses or decompresses an image 
- *     
+ *     Compresses or decompresses an image from command line
+ *     or stdin
  *
  **************************************************************/
 
@@ -31,13 +31,20 @@
 
 void compression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl);
 void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl);
-trim_dim trim_image_func(Pnm_ppm image);
+comp_cl trim_image_func(Pnm_ppm image);
 uint64_t pack_to_word(post_dct dct_values);
 void set_pixel_at_index(Pnm_rgb source, Pnm_rgb destination);
 post_dct unpack_word(FILE *inputstream, void *cl);
 void print_word(uint32_t word);
+void checker(int i, int j, A2 array, A2Methods_Object *ptr, void *cl);
 
 
+/*
+*       compress40
+*       Performs image compression, sets methods, sets closure
+*       trims image dimensions to be passed into compression
+*       apply function
+*/
 extern void compress40 (FILE *input)
 {
         Seq_T temp_seq = Seq_new(DCT_REQ);
@@ -49,7 +56,7 @@ extern void compress40 (FILE *input)
 
         Pnm_ppm image = Pnm_ppmread(input, methods);
 
-        trim_dim trimmed_image = trim_image_func(image);
+        comp_cl trimmed_image = trim_image_func(image);
         trimmed_image.cvpixel_seq = temp_seq;
         trimmed_image.methods = methods;
         trimmed_image.headerprinted = false;
@@ -59,76 +66,83 @@ extern void compress40 (FILE *input)
         Pnm_ppmfree(&image);
 }
 
+/*
+*       compression
+*       Apply function for compression, calls 
+*       rgbtocmp--> dct --> bitpacking --> print a word to stdout
+*/
 void compression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
 {
         comp_vid cv_pixel;
-        Pnm_rgb rgb_pixel = (Pnm_rgb) ptr;
         post_dct dct_values;
-        A2Methods_T methods = ((trim_dim *) cl)->methods;
+        A2Methods_T methods = ((comp_cl *) cl)->methods;
 
-        int h = ((trim_dim *) cl)->height;
-        int w = ((trim_dim *) cl)->width;
-        int denom = ((trim_dim *)cl)->denominator;
-        Seq_T cvpixel_seq = ((trim_dim *)cl)->cvpixel_seq;
+        int h = ((comp_cl *) cl)->height;
+        int w = ((comp_cl *) cl)->width;
+        int denom = ((comp_cl *)cl)->denominator;
+        Seq_T cvpixel_seq = ((comp_cl *)cl)->cvpixel_seq;
 
         if (i >= w || j >= h) { /*check to stay within trimmed bounds*/
                 return;
         }
 
         if (i%2 == 0 && j%2 == 0) { /*call dct and bitpacking at end of block*/
-                // fprintf(stderr, "red: %u, green %u, blue %u \n\n", rgb_pixel->red, rgb_pixel->green, rgb_pixel->blue);
-                // fprintf(stderr, "[%d, %d] i,j\n", i, j);
-                // printf("storing values\n");
-//
-                cv_pixel = rgbtocmp(rgb_pixel, denom);
-                Seq_addlo(cvpixel_seq, cv_pixel); /*store current pixel, Y1*/
-//
-                // Pnm_rgb temp = methods->at(array, i, j + 1);
-                // fprintf(stderr, "red: %u, green %u, blue %u \n\n", temp->red, temp->green, temp->blue);
-//
-                cv_pixel = rgbtocmp(methods->at(array, i, j + 1), denom);
-                // printf ("[%d, %d] i,j + 1\n", i, j + 1);
-                Seq_addlo(cvpixel_seq, cv_pixel); /*store pixel to right, Y2*/
-//
-                // temp = methods->at(array, i + 1, j);
-                // fprintf(stderr, "red: %u, green %u, blue %u \n\n", temp->red, temp->green, temp->blue);
-//
-                cv_pixel = rgbtocmp(methods->at(array, i + 1, j), denom);
-                // printf ("[%d, %d] i + 1,j\n", i + 1, j);
-                Seq_addlo(cvpixel_seq, cv_pixel); /*store pixel below, Y3*/
-//
-                // temp = methods->at(array, i + 1, j + 1);
-                // printf("red: %u, green %u, blue %u \n\n", temp->red, temp->green, temp->blue);
-//
-                cv_pixel = rgbtocmp(methods->at(array, i + 1, j + 1), denom);
-                Seq_addlo(cvpixel_seq, cv_pixel); /*store pixel on bot right, Y4*/
-//                
+
+        /*===COMP STAGE 1: RGB TO CMP===*/
+                /*---------Y1------------*/
+                cv_pixel = rgbtocmp( (Pnm_rgb)(methods->at(array, i, j)) 
+                                                                    , denom);
+                Seq_addlo(cvpixel_seq, cv_pixel);
+                /*store current pixel, Y1*/
+
+                /*---------Y2------------*/
+                cv_pixel = rgbtocmp( (Pnm_rgb)(methods->at(array, i, j + 1)) 
+                                                                    , denom);
+                Seq_addlo(cvpixel_seq, cv_pixel);              
+                /*store pixel to right, Y2*/
+
+                /*---------Y3------------*/
+                cv_pixel = rgbtocmp( (Pnm_rgb)(methods->at(array, i + 1, j))
+                                                                    , denom);
+                Seq_addlo(cvpixel_seq, cv_pixel); 
+                /*store pixel below, Y3*/
+
+                /*---------Y4------------*/
+                cv_pixel = rgbtocmp((Pnm_rgb)(methods->at(array, i + 1, j + 1))
+                                                                    , denom);
+                Seq_addlo(cvpixel_seq, cv_pixel); 
+                /*store pixel on bot right, Y4*/
+
+        /*===COMP STAGE 2: DCT===*/
                 dct_values = dc_transform(cvpixel_seq);
 
+        /*===COMP STAGE 3: BITPACK===*/
                 uint64_t packedword = pack_to_word(dct_values);
 
-                if ( ((trim_dim *) cl)->headerprinted == false ) {
+        /*===OUTPUT STAGE===*/
+                if ( ((comp_cl *) cl)->headerprinted == false ) {
                         printf("COMP40 Compressed image format 2\n%u %u",
                          (unsigned) w, (unsigned) h);
                         printf("\n");
-                        ((trim_dim *) cl)->headerprinted = true;
+                        ((comp_cl *) cl)->headerprinted = true;
                 }
                 print_word(packedword);
-
-
-
 
         } else {
                 return;
         }
 
-        (void) dct_values;
-        (void) array;
+        (void) ptr;
 }
 
-trim_dim trim_image_func(Pnm_ppm image)
+/*
+*       trim_image_func
+*       Takes in a Pnm_ppm image and trims the width and height to the 
+*       nearest even number
+*/
+comp_cl trim_image_func(Pnm_ppm image)
 {
-        trim_dim trimmed_image;
+        comp_cl trimmed_image;
 
         trimmed_image.denominator = image->denominator;
         trimmed_image.height = image->height;
@@ -147,6 +161,12 @@ trim_dim trim_image_func(Pnm_ppm image)
         return trimmed_image;
 }
 
+/*
+*       pack_to_word
+*       Takes in a post_dct struct of coefficients and index Pb/Pr
+*       Creates a new word and packs each value to specified field,
+*       returns the packed uint64_t word
+*/
 uint64_t pack_to_word(post_dct dct_values)
 {
         uint32_t word = 0;
@@ -161,6 +181,12 @@ uint64_t pack_to_word(post_dct dct_values)
         return word;
 }
 
+/*
+*       print_word
+*       Takes in a uint32_t word (truncates 64 bit words) and partitions 
+*       the word into individual bytes, then prints bytes out in
+*       big endian order
+*/
 void print_word(uint32_t word)
 {
         char BE_byte4 = Bitpack_getu(word, 8, 0); /*1st byte in little endian*/
@@ -174,7 +200,13 @@ void print_word(uint32_t word)
         putchar(BE_byte4);
 }
 
-extern void decompress40 (FILE *input) //currently a test function for cmptorgb only
+/*
+*       decompress40
+*       Performs image decompression, sets methods, sets closure
+*       to be passed into decompression apply function
+*       Makes a new Pnm_ppm with width and height read in from compressed file
+*/
+extern void decompress40 (FILE *input)
 {
         A2Methods_T methods = uarray2_methods_plain; 
         assert(methods);
@@ -192,7 +224,7 @@ extern void decompress40 (FILE *input) //currently a test function for cmptorgb 
         assert(read == 2);
         int c = getc(input);
         assert(c == '\n');
-        A2 array = methods->new(height, width, sizeof(struct Pnm_rgb) );
+        A2 array = methods->new( width, height, sizeof(struct Pnm_rgb) );
 
         decomp_closure.width = width;
         decomp_closure.height = height;
@@ -202,15 +234,22 @@ extern void decompress40 (FILE *input) //currently a test function for cmptorgb 
                                 , .methods = methods
                                 };
 
+
         map(pixmap.pixels, decompression, &decomp_closure);
+        // map(pixmap.pixels, checker, NULL);
+        // printf("checker completed\n");
 
         Pnm_ppmwrite(stdout, &pixmap);
         methods->free( &(pixmap.pixels) );
 
-} 
+}
 
-
-void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
+/*
+*       decompression
+*       Apply function for decompression, calls 
+*       unpack--> inverse dct --> cmptorgb --> writes pixels to pixmap
+*/
+void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void *cl)
 {
         Pnm_rgb source;
         Pnm_rgb destination;
@@ -223,10 +262,14 @@ void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
 
         if (i%2 == 0 && j%2 == 0) {
                 // printf("[i: %d, j: %d]\n", i ,j);
+
+        /*===DECOMP STAGE 1: UNPACKING BITS===*/
                 unpacked_word = unpack_word( ((decomp_cl *) cl)->inputstream 
-                                              , cl);
+                                                                       , cl);
+
+        /*===DECOMP STAGE 2: INVERSE DCT===*/
                 cvpixel_seq = inverse_dct_transform(unpacked_word);
-//
+//TEST
                 // comp_vid temp;  //for testing inv dct outputs
 
                 // for(int i = 0; i < 4; i++){
@@ -235,44 +278,51 @@ void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
                 //         printf("unpacked dct_values:\n\n.a = %u\n.b = %i\n.c = %i\n.d = %i\n.index_pb = %u\nindex_pr = %u\n\n\n\n", 
                 //         unpacked_word.a, unpacked_word.b, unpacked_word.c, unpacked_word.d, unpacked_word.index_pb, unpacked_word.index_pr);
                 // }
-//
+//TEST
+
+        /*===DECOMP STAGE 3: CMP TO RGB/WRITING TO PIXMAP===*/
+
+                /*---------Y1------------*/
                 component_video = Seq_get(cvpixel_seq, 3); /*get Y1 pixel*/
                 source = cmptorgb(component_video, DEFAULT_DENOM);
+
                 /*get pointer to current pixel*/
                 destination = (Pnm_rgb) methods->at(array, i, j);
                 set_pixel_at_index(source, destination);
                 // printf("Y1 pixel\ndest R = %u\ndest G = %u\ndest B = %u\n\n", destination->red, destination->green, destination->blue);
                 FREE(source);
 
-
+                /*---------Y2------------*/
                 component_video = Seq_get(cvpixel_seq, 2); /*get Y2 pixel*/
                 source = cmptorgb(component_video, DEFAULT_DENOM);
+
                 /*get pointer to pixel to the right*/
                 destination = (Pnm_rgb) methods->at(array, i , j + 1);
                 set_pixel_at_index(source, destination);
                 // printf("Y2 pixel\ndest R = %u\ndest G = %u\ndest B = %u\n\n", destination->red, destination->green, destination->blue);
                 FREE(source);
 
-
-
+                /*---------Y3------------*/
                 component_video = Seq_get(cvpixel_seq, 1); /*get Y3 pixel*/
+                source = cmptorgb(component_video, DEFAULT_DENOM);       
+
                 /*get pointer to pixel to the bottom*/
-                source = cmptorgb(component_video, DEFAULT_DENOM);                
                 destination = (Pnm_rgb) methods->at(array, i + 1 , j);
                 set_pixel_at_index(source, destination);
                 // printf("Y3 pixel\ndest R = %u\ndest G = %u\ndest B = %u\n\n", destination->red, destination->green, destination->blue);
                 FREE(source);
 
-
+                /*---------Y4------------*/
                 component_video = Seq_get(cvpixel_seq, 0); /*get Y4 pixel*/
-                /*get pointer to pixel to the bottom right*/
                 source = cmptorgb(component_video, DEFAULT_DENOM);
+
+                /*get pointer to pixel to the bottom right*/
                 destination = (Pnm_rgb) methods->at(array, i + 1 , j + 1);
                 set_pixel_at_index(source, destination);
                 // printf("Y4 pixel\ndest R = %u\ndest G = %u\ndest B = %u\n\n", destination->red, destination->green, destination->blue);
                 FREE(source);
 
-
+                /*free comp_vid structs within sequence, then free seq*/
                 while (Seq_length(cvpixel_seq) != 0)
                 {
                         component_video = (comp_vid)( Seq_remlo(cvpixel_seq) );
@@ -284,6 +334,10 @@ void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
         (void) ptr;
 }
 
+/*
+*       set_pixel_at_index
+*       Performs a deep copy between two Pnm_rgbs 
+*/
 void set_pixel_at_index(Pnm_rgb source, Pnm_rgb destination)
 {
         destination->red = source->red;
@@ -291,7 +345,13 @@ void set_pixel_at_index(Pnm_rgb source, Pnm_rgb destination)
         destination->blue = source->blue;
 }
 
-
+/*
+*       unpack_word
+*       Takes in a compressed file in binary format, reads byte by byte
+*       and reassembles 4 bytes into a 32 byte word in big endian order
+*       then unpacks each into coefficients and index Pb/Pr, stores each
+*       to a post_dct struct
+*/
 post_dct unpack_word(FILE *inputstream, void *cl)
 {
         post_dct dct_values;
@@ -299,40 +359,51 @@ post_dct unpack_word(FILE *inputstream, void *cl)
         int total_pixels = ( ((decomp_cl *) cl)->width) * 
                            ( ((decomp_cl *) cl)->height);
 
-        /*get and store bits 0-7 (in big endian)*/
+        /*get and store bits 0-7 (in big endian)-----------*/
         uint32_t readbyte = fgetc(inputstream);
 
-        /*check we read in the expected amount of bytes*/
+        /*check that we read in the expected amount of bytes*/
         ((decomp_cl *) cl)->counter++;
         assert(((decomp_cl *) cl)->counter <= total_pixels);
         
-        unpacked = Bitpack_newu(unpacked, 8, 24, readbyte);/*4th byte in little endian*/
-        
+        /*reassemble bits to word*/
+        unpacked = Bitpack_newu(unpacked, 8, 24, readbyte);
+        /*-------------------------------------------------*/
 
-        /*get and store bits 8-15 (in big endian)*/
+        /*get and store bits 8-15 (in big endian)----------*/
         readbyte = fgetc(inputstream);
-        
+
+        /*check read bytes*/
         ((decomp_cl *) cl)->counter++;
         assert(((decomp_cl *) cl)->counter <= total_pixels);
-        
-        unpacked = Bitpack_newu(unpacked, 8, 16, readbyte);/*3rd byte in little endian*/
 
-        /*get and store bits 16-23 (in big endian)*/
+        /*reassemble bits to word*/
+        unpacked = Bitpack_newu(unpacked, 8, 16, readbyte);
+        /*-------------------------------------------------*/
+
+        /*get and store bits 16-23 (in big endian)---------*/
         readbyte = fgetc(inputstream);
         
+        /*check read bytes*/
         ((decomp_cl *) cl)->counter++;
         assert(((decomp_cl *) cl)->counter <= total_pixels);        
         
-        unpacked = Bitpack_newu(unpacked, 8, 8, readbyte); /*2nd byte in little endian*/
+        /*reassemble bits to word*/
+        unpacked = Bitpack_newu(unpacked, 8, 8, readbyte); 
+        /*--------------------------------------------------*/
 
-        /*get and store bits 24-31 (in big endian)*/
+        /*get and store bits 24-31 (in big endian)----------*/
         readbyte = fgetc(inputstream);
         
+        /*check read bytes*/
         ((decomp_cl *) cl)->counter++;
         assert(((decomp_cl *) cl)->counter <= total_pixels);   
         
-        unpacked = Bitpack_newu(unpacked, 8, 0, readbyte); /*1st byte in little endian*/
+        /*reassemble bits to word*/
+        unpacked = Bitpack_newu(unpacked, 8, 0, readbyte);
+        /*--------------------------------------------------*/
 
+        /*Unpack reassembled word to post_dct struct--------*/
         dct_values.a = Bitpack_getu(unpacked, 9, 23);
         dct_values.b = Bitpack_gets(unpacked, 5, 18);
         dct_values.c = Bitpack_gets(unpacked, 5, 13);
@@ -346,53 +417,21 @@ post_dct unpack_word(FILE *inputstream, void *cl)
         return dct_values;
 }
 
-//version that does stage one only of compression
-// void compression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
-// {
-//         comp_vid cv_pixel;
-       
-//         Pnm_rgb rgb_pixel = (Pnm_rgb) ptr;
+void checker(int i, int j, A2 array, A2Methods_Object *ptr, void *cl)
+{
+        (void) cl;
+        (void) array;
+        Pnm_rgb temp = (Pnm_rgb) ptr;
 
-//         // fprintf(stderr, "red: %u, green %u, blue %u \n\n", rgb_pixel -> red, rgb_pixel -> green, rgb_pixel -> blue);
+        printf("[%d, %d]\n", i, j);
+        printf("r: %u  g: %u  b: %u\n\n", temp->red, temp->green, temp->blue);
 
-//         int h = ((trim_dim *) cl) -> height;
-//         int w = ((trim_dim *) cl) -> width;
-//         int denom = ((trim_dim *)cl) -> denominator;
 
-//         if ( i >= w || j >= h) {
-//                 return;
+        // assert(ptr != NULL);
+        // printf("ptr address: %p\n", ptr);
 
-//         }else {
-//                 cv_pixel = rgbtocmp(rgb_pixel, denom);
-//                 // fprintf(stderr, "y: %f, pb: %f, pr %f, \n\n", cv_pixel -> y, cv_pixel -> pb, cv_pixel -> pr);
-
-//         }
-//         (void) array;
-// }
-
-//tests last stage of decompression only
-//maybe call a rounding function on the conversions
-// extern void decompress40 (FILE *input)
-// {
-//         comp_vid cv_pixel;
-//         NEW(cv_pixel);
-//         Pnm_rgb rgb_pixel;
-//         NEW(rgb_pixel);
-//         cv_pixel-> y = 0.556086;
-//         cv_pixel -> pb = -0.059315;
-//         cv_pixel-> pr = -0.027417;
-
-//         A2Methods_T methods = uarray2_methods_blocked; 
-//         assert(methods);
-
-//         A2Methods_mapfun *map = methods->map_block_major;
-
-//         Pnm_ppm image = Pnm_ppmread(input, methods);
-//          rgb_pixel = cmptorgb(cv_pixel, image-> denominator);
-//          fprintf(stderr, "red %u, green %u, blue %u\n", rgb_pixel-> red, rgb_pixel->green, rgb_pixel-> blue);
-        
-//         (void)map;
-//         (void) image;
-//         //map(image-> pixels, compression, &image->denominator);
-// } 
-
+        // if (ptr == NULL) {
+        //         printf("i: %d, j:%d\n", i, j);
+        //         exit(0);
+        // }
+}

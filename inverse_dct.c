@@ -6,7 +6,7 @@
  *     Authors:  Omar Badr, Henning Shih 
  *     Date:     Mar 3, 2019
  *
- *     conducts the inverse of discrete cosine transformation 
+ *     Conducts the inverse of discrete cosine transformation 
  *     
  *
  **************************************************************/
@@ -23,83 +23,6 @@ Seq_T inverse_dct_transform(post_dct unpacked_word);
 
 #define DENOMINATOR 255
 
-
-// int main()
-// {
-//         Seq_T component_video;
-//         post_dct test1, test2, test3, test4;
-
-//         comp_vid temp;
-
-//         test1.a = 169;
-//         test1.b = -7;
-//         test1.c = -7;
-//         test1.d = -3;
-//         test1.index_pb = 11;
-//         test1.index_pr = 3;
-
-       
-//        component_video = inverse_dct_transform(test1);
-
-
-//        for(int i = 0; i < 4; i++){
-//                 temp = Seq_get(component_video, i);
-//                 printf(" Test1: Y%d: %f\n\n", i, temp->y);
-//                // temp = (Seq_remlo(component_video));
-//                //  FREE(temp);
-//         }
-
-//         test2.a = 287;
-//         test2.b = 11;
-//         test2.c = 7;
-//         test2.d = 4;
-//         test2.index_pb = 4;
-//         test2.index_pr = 13;
-
-//         component_video = inverse_dct_transform(test2);
-
-//        for(int i = 0; i < 4; i++){
-//                 temp = Seq_get(component_video, i);
-//                 printf("Test2: Y%d: %f\n\n", i, temp->y);
-//                 // temp = (Seq_remlo(component_video));
-//                 // FREE(temp);
-//         }
-
-//         test3.a = 240;
-//         test3.b = 0;
-//         test3.c = 0;
-//         test3.d = 4;
-//         test3.index_pb = 10;
-//         test3.index_pr = 3;
-
-//         component_video = inverse_dct_transform(test3);
-
-//         for(int i = 0; i < 4; i++){
-//                 temp = Seq_get(component_video, i);
-//                 printf("TEST3: Y%d: %f\n\n", i, temp->y);
-//                // temp = (Seq_remlo(component_video));
-//                //  FREE(temp);
-//         }
-
-//         test4.a = 287;
-//         test4.b = -4;
-//         test4.c = 7;
-//         test4.d = -11;
-//         test4.index_pb = 4;
-//         test4.index_pr = 13;
-
-
-//        component_video = inverse_dct_transform(test4);
-
-//         for ( int i = 0; i < 4; i++) {
-//                 temp = Seq_get(component_video, i);
-//                 printf("TEST4: Y%d: %f\n\n", i, temp->y);
-//                 // temp = (Seq_remlo(component_video));
-//                 // FREE(temp);
-//         }
-
-// }
-
 Seq_T inverse_dct_transform(post_dct unpacked_word)
 {
         Seq_T component_video = Seq_new(DCT_REQ);
@@ -113,10 +36,12 @@ static float get_y1_value(post_dct unpacked_word)
 {
         float y = (unpacked_word.a - unpacked_word.b - unpacked_word.c + 
                 unpacked_word.d);
-        y /=255;
+        y /= DENOMINATOR;
 
         if (y > 1) {  /*round to 1 to stay within range*/
                 y = 1;
+        } else if (y < 0) {
+                y = 0;
         }
 
         return y;
@@ -126,10 +51,12 @@ static float get_y2_value(post_dct unpacked_word)
 {
         float y = (unpacked_word.a - unpacked_word.b + unpacked_word.c - 
                 unpacked_word.d);
-        y /=255;
+        y /= DENOMINATOR;
 
         if (y > 1) {  /*round to 1 to stay within range*/
                 y = 1;
+        } else if (y < 0) {
+                y = 0;
         }        
 
         return y;
@@ -139,10 +66,12 @@ static float get_y3_value(post_dct unpacked_word)
 {
         float y = (unpacked_word.a + unpacked_word.b - unpacked_word.c - 
                 unpacked_word.d);
-        y /=255;
+        y /= DENOMINATOR;
 
         if (y > 1) {  /*round to 1 to stay within range*/
                 y = 1;
+        } else if (y < 0) {
+                y = 0;
         }
 
         return y;
@@ -152,14 +81,22 @@ static float get_y4_value(post_dct unpacked_word)
 {
         float y = (unpacked_word.a + unpacked_word.b + unpacked_word.c + 
                 unpacked_word.d);
-        y /=255;
+        y /= DENOMINATOR;
 
         if (y > 1) {  /*round to 1 to stay within range*/
                 y = 1;
+        } else if (y < 0) {
+                y = 0;
         }
 
         return y;
 }
+
+/*
+*       set_component_video
+*       Main conversion function, creates 4 component_video structs
+*       and adds each to a Hanson sequence in order of Y4-Y1
+*/
 static Seq_T set_component_video(post_dct word, Seq_T component_video)
 {
         comp_vid cv_pixel1, cv_pixel2, cv_pixel3, cv_pixel4;

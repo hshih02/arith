@@ -1,0 +1,25 @@
+COMP40 HW4 - Arith
+
+#Group members: Henning Shih (hshih 02)
+                Omar Badr (obadr01)
+
+#Total hours spent: ~50 (20 on analysis and design, 30 on implmentation)
+
+#Assistance from TAs: 
+Jordan Lueck, Ben, Byron, Noah, Michael, Sammy, Eloise, Leila, Sam  
+Special thanks to Byron for catching a very confusing bug.
+
+#Implmentation
+All stages of compression work and  decompression word based on our testing. 
+Bitpacking interface passes all of our own blocks with values calculated 
+by hand.
+
+The calculations in each module comply with the calculations as described in
+the specifications to the best of our knowledge. However our final RGB values
+are off by a noticeable margin. We suspect a large amount of precision and data
+is lost in the inverse DCT stage given our Y values differ the most from
+the original values in the compression stage.
+
+Ppmdiff results for original vs compressed/decompressed image show a value
+of ~0.3 for all test images, roughly a 30% difference. Some images perform
+better and yield values under 0.26.
