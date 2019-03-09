@@ -36,7 +36,6 @@ uint64_t pack_to_word(post_dct dct_values);
 void set_pixel_at_index(Pnm_rgb source, Pnm_rgb destination);
 post_dct unpack_word(FILE *inputstream, void *cl);
 void print_word(uint32_t word);
-void checker(int i, int j, A2 array, A2Methods_Object *ptr, void *cl);
 
 
 /*
@@ -147,7 +146,6 @@ comp_cl trim_image_func(Pnm_ppm image)
         trimmed_image.denominator = image->denominator;
         trimmed_image.height = image->height;
         trimmed_image.width = image->width;
-        // printf("denominator: %u \n\n", trimmed_image.denominator);
 
         if (image->height % IMGBLOCK != 0) { 
 
@@ -177,7 +175,6 @@ uint64_t pack_to_word(post_dct dct_values)
         word = Bitpack_newu(word, 4, 4, dct_values.index_pb);
         word = Bitpack_newu(word, 4, 0, dct_values.index_pr);
 
-        // printf ("packed word: %lu\n\n", word);
         return word;
 }
 
@@ -236,12 +233,9 @@ extern void decompress40 (FILE *input)
 
 
         map(pixmap.pixels, decompression, &decomp_closure);
-        // map(pixmap.pixels, checker, NULL);
-        // printf("checker completed\n");
 
         Pnm_ppmwrite(stdout, &pixmap);
         methods->free( &(pixmap.pixels) );
-
 }
 
 /*
@@ -261,24 +255,12 @@ void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void *cl)
         Seq_T cvpixel_seq;
 
         if (i%2 == 0 && j%2 == 0) {
-                // printf("[i: %d, j: %d]\n", i ,j);
-
         /*===DECOMP STAGE 1: UNPACKING BITS===*/
                 unpacked_word = unpack_word( ((decomp_cl *) cl)->inputstream 
                                                                        , cl);
 
         /*===DECOMP STAGE 2: INVERSE DCT===*/
                 cvpixel_seq = inverse_dct_transform(unpacked_word);
-//TEST
-                // comp_vid temp;  //for testing inv dct outputs
-
-                // for(int i = 0; i < 4; i++){
-                //         temp = Seq_get(cvpixel_seq, i);
-                //         printf("Testinvdct\nY%d: %f\npbavg: %f\npravg: %f\n\n", i, temp->y, temp->pb, temp->pr);
-                //         printf("unpacked dct_values:\n\n.a = %u\n.b = %i\n.c = %i\n.d = %i\n.index_pb = %u\nindex_pr = %u\n\n\n\n", 
-                //         unpacked_word.a, unpacked_word.b, unpacked_word.c, unpacked_word.d, unpacked_word.index_pb, unpacked_word.index_pr);
-                // }
-//TEST
 
         /*===DECOMP STAGE 3: CMP TO RGB/WRITING TO PIXMAP===*/
 
@@ -289,7 +271,6 @@ void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void *cl)
                 /*get pointer to current pixel*/
                 destination = (Pnm_rgb) methods->at(array, i, j);
                 set_pixel_at_index(source, destination);
-                // printf("Y1 pixel\ndest R = %u\ndest G = %u\ndest B = %u\n\n", destination->red, destination->green, destination->blue);
                 FREE(source);
 
                 /*---------Y2------------*/
@@ -299,7 +280,6 @@ void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void *cl)
                 /*get pointer to pixel to the right*/
                 destination = (Pnm_rgb) methods->at(array, i , j + 1);
                 set_pixel_at_index(source, destination);
-                // printf("Y2 pixel\ndest R = %u\ndest G = %u\ndest B = %u\n\n", destination->red, destination->green, destination->blue);
                 FREE(source);
 
                 /*---------Y3------------*/
@@ -309,7 +289,6 @@ void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void *cl)
                 /*get pointer to pixel to the bottom*/
                 destination = (Pnm_rgb) methods->at(array, i + 1 , j);
                 set_pixel_at_index(source, destination);
-                // printf("Y3 pixel\ndest R = %u\ndest G = %u\ndest B = %u\n\n", destination->red, destination->green, destination->blue);
                 FREE(source);
 
                 /*---------Y4------------*/
@@ -319,7 +298,6 @@ void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void *cl)
                 /*get pointer to pixel to the bottom right*/
                 destination = (Pnm_rgb) methods->at(array, i + 1 , j + 1);
                 set_pixel_at_index(source, destination);
-                // printf("Y4 pixel\ndest R = %u\ndest G = %u\ndest B = %u\n\n", destination->red, destination->green, destination->blue);
                 FREE(source);
 
                 /*free comp_vid structs within sequence, then free seq*/
@@ -411,27 +389,5 @@ post_dct unpack_word(FILE *inputstream, void *cl)
         dct_values.index_pb = Bitpack_getu(unpacked, 4, 4);
         dct_values.index_pr = Bitpack_getu(unpacked, 4, 0);
 
-        // printf("dct_values:\n\n.a = %u\n.b = %i\n.c = %i\n.d = %i\n.index_pb = %u\nindex_pr = %u\n\n", 
-        // dct_values.a, dct_values.b, dct_values.c, dct_values.d, dct_values.index_pb, dct_values.index_pr);
-
         return dct_values;
-}
-
-void checker(int i, int j, A2 array, A2Methods_Object *ptr, void *cl)
-{
-        (void) cl;
-        (void) array;
-        Pnm_rgb temp = (Pnm_rgb) ptr;
-
-        printf("[%d, %d]\n", i, j);
-        printf("r: %u  g: %u  b: %u\n\n", temp->red, temp->green, temp->blue);
-
-
-        // assert(ptr != NULL);
-        // printf("ptr address: %p\n", ptr);
-
-        // if (ptr == NULL) {
-        //         printf("i: %d, j:%d\n", i, j);
-        //         exit(0);
-        // }
 }

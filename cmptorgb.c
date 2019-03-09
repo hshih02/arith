@@ -10,8 +10,6 @@
  *     
  **************************************************************/
 
-
-
 #include "cmptorgb.h"
 static float get_r_val(float y, float pb, float pr, unsigned denominator);
 static float get_g_val(float y, float pb, float pr, unsigned denominator);
@@ -22,13 +20,11 @@ Pnm_rgb cmptorgb(comp_vid cvpixel, unsigned denominator)
         Pnm_rgb rgbpixel;
         NEW(rgbpixel);
 
-
         float y, pb, pr;
         y = cvpixel->y;
         pb = cvpixel->pb;
         pr = cvpixel->pr;
                         
-        
         rgbpixel->red = (unsigned) roundf( get_r_val(y,pb,pr,denominator) );
         rgbpixel->green = (unsigned) roundf( get_g_val(y,pb,pr,denominator) );
         rgbpixel->blue = (unsigned) roundf( get_b_val(y,pb,pr,denominator) );

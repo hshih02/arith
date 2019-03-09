@@ -10,15 +10,14 @@
  *     unsigned integer words and values
  *
  **************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 #include "bitpack.h"
 
-
 static const uint64_t BITLEN = 64;
-
 static uint64_t mask_of(unsigned width, unsigned lsb);
 static bool msb_is_neg(uint64_t value, unsigned width, unsigned lsb);
 static uint64_t lshift(uint64_t word, unsigned n);
@@ -69,7 +68,8 @@ bool Bitpack_fitss(int64_t n, unsigned width)
 uint64_t Bitpack_getu(uint64_t word, unsigned width, unsigned lsb)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
-
+        assert( (int) width >= 0);
+        
         uint64_t field_val;
         uint64_t mask = mask_of(width, lsb);
 
@@ -88,7 +88,8 @@ uint64_t Bitpack_getu(uint64_t word, unsigned width, unsigned lsb)
 int64_t Bitpack_gets(uint64_t word, unsigned width, unsigned lsb)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
-        
+        assert( (int) width >= 0);
+
         int64_t mask;
         int64_t field_val;
         mask = mask_of(width, lsb);
@@ -117,6 +118,7 @@ uint64_t Bitpack_newu(uint64_t word, unsigned width, unsigned lsb,
                                                      uint64_t value)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
+        assert( (int) width >= 0);
 
         if ( Bitpack_fitsu(value, width) == false ) {
                 RAISE(Bitpack_Overflow);
@@ -145,6 +147,7 @@ uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
                                                      int64_t value)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
+        assert( (int) width >= 0);
 
         if ( Bitpack_fitss(value, width) == false ) {
                 RAISE(Bitpack_Overflow);
@@ -153,7 +156,7 @@ uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
 
         if (msb_is_neg(value, width, 0) == true) {      /*use 0 as lsb      */
                                                         /*because we pass in*/
-                uint64_t mask = mask_of(width, lsb);    /*value, not a word */ 
+                uint64_t mask = mask_of(width, lsb);    /*value, not a word */
                 uint64_t mask2 = ~0;
                 
                 mask2 = lshift(mask2, (lsb + width) );
@@ -186,6 +189,7 @@ uint64_t Bitpack_news(uint64_t word, unsigned width, unsigned lsb,
 static uint64_t mask_of(unsigned width, unsigned lsb)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
+        assert( (int) width >= 0);        
 
         uint64_t mask = ~0;
 
@@ -196,7 +200,6 @@ static uint64_t mask_of(unsigned width, unsigned lsb)
         return mask;
 }
 
-
 /*
 *       msb_is_neg
 *       returns true if the msb of a specified field in a uint64_t is 
@@ -206,6 +209,7 @@ static uint64_t mask_of(unsigned width, unsigned lsb)
 static bool msb_is_neg(uint64_t value, unsigned width, unsigned lsb)
 {
         assert(width <= BITLEN && width + lsb <= BITLEN);
+        assert( (int) width >= 0); 
 
         uint64_t mask = mask_of(width, lsb);
 
@@ -221,7 +225,6 @@ static bool msb_is_neg(uint64_t value, unsigned width, unsigned lsb)
 
         return false;
 }
-
 
 static uint64_t lshift(uint64_t word, unsigned n)
 {

@@ -11,7 +11,6 @@
  *
  ********************************************************************/
 
-
 #ifndef ARITHSTRUCTS_INCLUDED
 #define ARITHSTRUCTS_INCLUDED
 #define DCT_REQ 4      /* corresponds to blocksize^2 */
@@ -24,7 +23,6 @@
 #include <math.h>
 #include <arith40.h>
 #include <stdbool.h>
-
 
 /*
 *       component_video

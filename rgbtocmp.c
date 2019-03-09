@@ -25,8 +25,7 @@ comp_vid rgbtocmp(Pnm_rgb rgbpixel, unsigned denominator)
         r = (float)(rgbpixel->red)/(float)denominator;
         g = (float)(rgbpixel->green)/(float)denominator;
         b = (float)(rgbpixel->blue)/(float)denominator;
-                        
-        
+
         cvpixel->y = get_y_val(r,g,b);
         cvpixel->pb = get_pb_val(r,g,b);
         cvpixel->pr = get_pr_val(r,g,b);
