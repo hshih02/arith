@@ -84,18 +84,18 @@ post_dct dc_transform(Seq_T component_video)
         avg_pb /= DCT_REQ;  /*average out the stored pb/pr values*/
         avg_pr /= DCT_REQ;
 
-        printf("average pb = %f\n", avg_pb);
-        printf("average pr = %f\n", avg_pr);
+        // printf("average pb = %f\n", avg_pb);
+        // printf("average pr = %f\n", avg_pr);
 
         indexpb = Arith40_index_of_chroma(avg_pb);
         indexpr = Arith40_index_of_chroma(avg_pr);
 
-        printf("indexpb pre saved = %u\n", indexpb);
+        // printf("indexpb pre saved = %u\n", indexpb);
 
-        printf ("a coeff: %u\n", get_a_coefficient(Y4, Y3, Y2, Y1));
-        printf ("b coeff: %d\n", get_b_coefficient(Y4, Y3, Y2, Y1));
-        printf ("c coeff: %d\n", get_c_coefficient(Y4, Y3, Y2, Y1));
-        printf ("d coeff: %d\n", get_d_coefficient(Y4, Y3, Y2, Y1));
+        // printf ("a coeff: %u\n", get_a_coefficient(Y4, Y3, Y2, Y1));
+        // printf ("b coeff: %d\n", get_b_coefficient(Y4, Y3, Y2, Y1));
+        // printf ("c coeff: %d\n", get_c_coefficient(Y4, Y3, Y2, Y1));
+        // printf ("d coeff: %d\n", get_d_coefficient(Y4, Y3, Y2, Y1));
 
         dct_values.a = get_a_coefficient(Y4, Y3, Y2, Y1);
         dct_values.b = get_b_coefficient(Y4, Y3, Y2, Y1);
@@ -106,8 +106,8 @@ post_dct dc_transform(Seq_T component_video)
 
 
 
-        printf("index_pb = %u\n", dct_values.index_pb);
-        printf("index_pr = %u\n", dct_values.index_pr);
+        // printf("index_pb = %u\n", dct_values.index_pb);
+        // printf("index_pr = %u\n", dct_values.index_pr);
 
         free_seq_elements(component_video);
 
@@ -164,10 +164,8 @@ static int quantize_coefficient(float coeff)
         /*quantize to -0.3 or 0.3*/
         if (fabsf(coeff) > 0.3 && coeff >= 0) {
                 coeff = 0.3;
-                printf("quantize to 0.3\n");
         } else if (fabsf(coeff) > 0.3  && coeff < 0) {
                 coeff = -0.3;
-                printf("quantize to -0.3\n");
         }
 
         coeff = roundf(coeff*50);

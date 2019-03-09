@@ -69,6 +69,9 @@ stage1: rgbtocmp cmptorgb
 40image: 40image.o compress40.o a2plain.o uarray2.o rgbtocmp.o cmptorgb.o dct.o bitpack.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+componly: 40image.o onlycompress40.o a2plain.o uarray2.o rgbtocmp.o cmptorgb.o dct.o bitpack.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
 ppmdiff: ppmdiff.o uarray2.o a2plain.o 
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
@@ -88,5 +91,5 @@ bitpack: bitpack.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 clean:
-	rm -f 40image ppmdiff rgbtocmp cmptorgb dct inverse_dct bitpack *.o
+	rm -f 40image ppmdiff rgbtocmp cmptorgb dct inverse_dct bitpack componly *.o
 

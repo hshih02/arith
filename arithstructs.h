@@ -23,6 +23,7 @@
 #include <mem.h>
 #include <math.h>
 #include <arith40.h>
+#include <stdbool.h>
 
 
 typedef struct component_video {
@@ -37,6 +38,7 @@ typedef struct trimmed_dimensions {
         unsigned denominator;
         A2Methods_T methods;
         Seq_T cvpixel_seq;
+        bool headerprinted;
 } trim_dim;
 
 typedef struct post_dct {

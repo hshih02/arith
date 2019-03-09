@@ -1,6 +1,6 @@
 /**************************************************************
  *
- *                     compress40.c
+ *                     onlycompress40.c
  *
  *     Assignment: HW4 - arith
  *     Authors:  Omar Badr, Henning Shih 
@@ -192,7 +192,6 @@ extern void decompress40 (FILE *input) //currently a test function for cmptorgb 
                                 , .methods = methods
                                 };
 
-        uint32_t packedword = readword(input);
 
         (void) input;
         (void) pixmap;
@@ -201,13 +200,15 @@ extern void decompress40 (FILE *input) //currently a test function for cmptorgb 
 } 
 
 
-void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
-{
-        Pnm_rgb rgb_pixel;
-        
-        uint32_t readword = fgetc(input);
+// void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
+// {
+//         Pnm_rgb rgb_pixel 
+// }
 
-}
+// uint32_t readword(FILE *input);
+// {
+//         uint32_t readword = fgetc(input);
+// }
 
 
 post_dct unpack_word(uint64_t word)
