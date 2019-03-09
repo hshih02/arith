@@ -50,4 +50,9 @@ typedef struct post_dct {
         unsigned index_pr;
 } post_dct;
 
+typedef struct decompression_closure {
+      FILE *inputstream;  
+
+} decomp_cl;
+
 #endif

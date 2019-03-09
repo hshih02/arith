@@ -29,11 +29,11 @@
 
 
 void compression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl);
-// void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl);
+void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl);
 trim_dim trim_image_func(Pnm_ppm image);
 uint64_t pack_to_word(post_dct dct_values);
-post_dct unpack_word(uint64_t word);
-void print_word(uint64_t word);
+post_dct unpack_word(FILE *inputstream);
+void print_word(uint32_t word);
 
 
 extern void compress40 (FILE *input)
@@ -106,7 +106,8 @@ void compression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
                 uint64_t packedword = pack_to_word(dct_values);
 
                 if ( ((trim_dim *) cl)->headerprinted == false ) {
-                        printf("COMP 40 Compressed image format 2\n%u %u", w, h);
+                        printf("COMP40 Compressed image format 2\n%u %u",
+                         (unsigned) w, (unsigned) h);
                         printf("\n");
                         ((trim_dim *) cl)->headerprinted = true;
                 }
@@ -146,7 +147,7 @@ trim_dim trim_image_func(Pnm_ppm image)
 
 uint64_t pack_to_word(post_dct dct_values)
 {
-        uint64_t word = 0;
+        uint32_t word = 0;
         word = Bitpack_newu(word, 9, 23, dct_values.a);
         word = Bitpack_news(word, 5, 18, dct_values.b);
         word = Bitpack_news(word, 5, 13, dct_values.c);
@@ -158,7 +159,7 @@ uint64_t pack_to_word(post_dct dct_values)
         return word;
 }
 
-void print_word(uint64_t word)
+void print_word(uint32_t word)
 {
         char BE_byte4 = Bitpack_getu(word, 8, 0); /*1st byte in little endian*/
         char BE_byte3 = Bitpack_getu(word, 8, 8); /*2nd byte in little endian*/
@@ -173,18 +174,24 @@ void print_word(uint64_t word)
 
 extern void decompress40 (FILE *input) //currently a test function for cmptorgb only
 {
+        printf("HI\n");
         A2Methods_T methods = uarray2_methods_plain; 
         assert(methods);
 
         A2Methods_mapfun *map = methods->map_row_major;
 
+        decomp_cl decomp_closure;
+        decomp_closure.inputstream = input;
+        printf("AFTER SETTING METHODS AND CL\n");
         unsigned height, width;
-        int read = fscanf(stdin, "COMP40 Compressed image format 2\n%u %u", 
-                          &width, &height);
+        int read = fscanf(input, "COMP40 Compressed image format 2\n%u %u", 
+                        &width, &height);
+        printf("widht: %u, height: %u,\n", width, height);
+        printf("read %u\n", read);
         assert(read == 2);
-        int c = getc(stdin);
+        int c = getc(input);
         assert(c == '\n');
-
+        printf("after assert c == backslash n \n");
         A2 array = methods->new(height, width, sizeof(struct Pnm_rgb) );
 
         struct Pnm_ppm pixmap = { .width = width, .height = height
@@ -192,27 +199,42 @@ extern void decompress40 (FILE *input) //currently a test function for cmptorgb 
                                 , .methods = methods
                                 };
 
-        uint32_t packedword = readword(input);
-
-        (void) input;
         (void) pixmap;
         (void) map;
-        //map(image-> pixels, compression, &image->denominator);
+        printf("HI\n");
+        map(pixmap.pixels, decompression, &decomp_closure);
+        printf("BYE\n");
 } 
 
 
 void decompression(int i, int j, A2 array, A2Methods_Object *ptr, void * cl)
 {
         Pnm_rgb rgb_pixel;
+        post_dct unpacked_word;
         
-        uint32_t readword = fgetc(input);
+        // uint32_t readword = fgetc( ((decomp_cl *) cl)->inputstream);
+        unpacked_word = unpack_word( ((decomp_cl *) cl)->inputstream );
+        (void) unpacked_word;
+        (void) rgb_pixel;
+        (void) i;
+        (void) j;
+        (void) array;
+        (void) ptr;
+
 
 }
 
 
-post_dct unpack_word(uint64_t word)
+post_dct unpack_word(FILE *inputstream)
 {
+
         post_dct dct_values;
+        uint32_t readword = fgetc(inputstream);
+        printf("readword: %lu\n\n", readword);
+
+        dct_values.index_pr = Bitpack_getu(word, 4, 0);
+        dct_values.index_pb = Bitpack_getu(word, 4, 4);
+ 
 
         dct_values.a = Bitpack_getu(word, 9, 23);
         dct_values.b = Bitpack_gets(word, 5, 18);
@@ -221,8 +243,8 @@ post_dct unpack_word(uint64_t word)
         dct_values.index_pb = Bitpack_getu(word, 4, 4);
         dct_values.index_pr = Bitpack_getu(word, 4, 0);
 
-        // printf("dct_values:\n\n.a = %u\n.b = %i\n.c = %i\n.d = %i\n.index_pb = %u\nindex_pr = %u\n\n", 
-        // dct_values.a, dct_values.b, dct_values.c, dct_values.d, dct_values.index_pb, dct_values.index_pr);
+        printf("dct_values:\n\n.a = %u\n.b = %i\n.c = %i\n.d = %i\n.index_pb = %u\nindex_pr = %u\n\n", 
+        dct_values.a, dct_values.b, dct_values.c, dct_values.d, dct_values.index_pb, dct_values.index_pr);
 
         return dct_values;
 }
