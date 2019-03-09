@@ -66,7 +66,8 @@ stage1: rgbtocmp cmptorgb
 ## Linking step (.o -> executable program)
 
 
-40image: 40image.o compress40.o a2plain.o uarray2.o rgbtocmp.o cmptorgb.o dct.o bitpack.o
+40image: 40image.o compress40.o a2plain.o uarray2.o rgbtocmp.o cmptorgb.o\
+dct.o bitpack.o inverse_dct.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 componly: 40image.o onlycompress40.o a2plain.o uarray2.o rgbtocmp.o cmptorgb.o dct.o bitpack.o

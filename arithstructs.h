@@ -52,7 +52,10 @@ typedef struct post_dct {
 
 typedef struct decompression_closure {
       FILE *inputstream;  
-
+      A2Methods_T methods;
+      int counter;
+      unsigned width;
+      unsigned height;
 } decomp_cl;
 
 #endif
