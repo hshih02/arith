@@ -52,6 +52,8 @@ ppmdiff: ppmdiff
 
 40image: 40image
 
+40image-6: 40image-6
+
 ## Compile step (.c files -> .o files)
 
 # To get *any* .o file, compile its .c file with the following rule.
@@ -66,6 +68,10 @@ ppmdiff: ppmdiff
 dct.o bitpack.o inverse_dct.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
+40image-6:40image.o compress40.o a2plain.o uarray2.o rgbtocmp.o cmptorgb.o\
+dct.o bitpack.o inverse_dct.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
 ppmdiff: ppmdiff.o uarray2.o a2plain.o 
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
@@ -73,5 +79,5 @@ bitpack: bitpack.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 clean:
-	rm -f 40image bitpack *.o
+	rm -f 40image 40image-6 bitpack *.o
 

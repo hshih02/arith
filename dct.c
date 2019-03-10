@@ -65,7 +65,7 @@ static unsigned get_a_coefficient(float Y4, float Y3, float Y2, float Y1)
 {
         float a_coeff = (Y4 + Y3 + Y2 + Y1)/DCT_REQ; /*assuming dct works the way we expect*/
         
-        a_coeff = roundf(a_coeff * 511);
+        a_coeff = roundf(a_coeff * 63);
         return (unsigned)a_coeff;
 }
 
@@ -124,7 +124,7 @@ static int quantize_coefficient(float coeff)
         }
 
         /*round value and *50 to make value fit as an int between -15 ~ 15*/
-        coeff = roundf(coeff*50);
+        coeff = roundf(coeff*(31/0.3));
 
         return (int)coeff;
 }
