@@ -168,13 +168,12 @@ comp_cl trim_image_func(Pnm_ppm image)
 uint64_t pack_to_word(post_dct dct_values)
 {
         uint32_t word = 0;
-        word = Bitpack_newu(word, 9, 23, dct_values.a);
-        word = Bitpack_news(word, 5, 18, dct_values.b);
-        word = Bitpack_news(word, 5, 13, dct_values.c);
-        word = Bitpack_news(word, 5, 8, dct_values.d);
+        word = Bitpack_newu(word, 6, 26, dct_values.a);
+        word = Bitpack_news(word, 6, 20, dct_values.b);
+        word = Bitpack_news(word, 6, 14, dct_values.c);
+        word = Bitpack_news(word, 6, 8, dct_values.d);
         word = Bitpack_newu(word, 4, 4, dct_values.index_pb);
         word = Bitpack_newu(word, 4, 0, dct_values.index_pr);
-
         return word;
 }
 
@@ -382,10 +381,10 @@ post_dct unpack_word(FILE *inputstream, void *cl)
         /*--------------------------------------------------*/
 
         /*Unpack reassembled word to post_dct struct--------*/
-        dct_values.a = Bitpack_getu(unpacked, 9, 23);
-        dct_values.b = Bitpack_gets(unpacked, 5, 18);
-        dct_values.c = Bitpack_gets(unpacked, 5, 13);
-        dct_values.d = Bitpack_gets(unpacked, 5, 8);
+        dct_values.a = Bitpack_getu(unpacked, 6, 26);
+        dct_values.b = Bitpack_gets(unpacked, 6, 20);
+        dct_values.c = Bitpack_gets(unpacked, 6, 14);
+        dct_values.d = Bitpack_gets(unpacked, 6, 8);
         dct_values.index_pb = Bitpack_getu(unpacked, 4, 4);
         dct_values.index_pr = Bitpack_getu(unpacked, 4, 0);
 
