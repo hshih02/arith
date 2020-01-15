@@ -1,5 +1,7 @@
 COMP40 HW4 - Arith
 
+A lossy image compressor/decompressor written in C, using Discrete Cosine Transform.
+
 #Group members: Henning Shih (hshih 02)
                 Omar Badr (obadr01)
 
